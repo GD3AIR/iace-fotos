@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IACE Fotos">
+<meta name="theme-color" content="#1F3A5F">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>IACE Fotos de Vistoria</title>
+<style>
+:root{--az:#1F3A5F;--az2:#2D5286;--bg:#F2F4F7;--card:#fff;--tx:#1B1F24;--mut:#6B7480;--ln:#DDE1E6;--ok:#1E7B45;--warn:#B45309;--err:#B42318}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--az);color:#fff;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;display:flex;align-items:center;gap:10px}
+header h1{font-size:17px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header button{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:10px;padding:8px 12px;font-size:15px}
+main{padding:12px 12px calc(env(safe-area-inset-bottom) + 110px)}
+.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.vlist .card{display:flex;gap:12px;align-items:center}
+.vlist .card .info{flex:1;min-width:0}
+.vlist .t{font-weight:600}
+.mut{color:var(--mut);font-size:13px}
+.badge{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:#FEF3C7;color:var(--warn);margin-top:4px}
+.badge.ok{background:#DCFCE7;color:var(--ok)}
+.btn{display:block;width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;font-weight:600;background:var(--az);color:#fff}
+.btn.sec{background:#E4E9F0;color:var(--az)}
+.btn.dan{background:#FDECEC;color:var(--err)}
+.btn:disabled{opacity:.5}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,select,textarea{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--ln);border-radius:10px;background:#fff;color:var(--tx)}
+textarea{min-height:110px;resize:vertical}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--ln);padding:10px 12px calc(env(safe-area-inset-bottom) + 10px);display:flex;gap:8px}
+.bar .btn{padding:15px 10px}
+.cam{flex:2 !important;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:8px}
+.pavbox{background:var(--card);border-radius:14px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.pavbox select{flex:1;font-weight:600}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--ln);background:#fff;border-radius:99px;padding:6px 12px;font-size:14px;color:var(--tx)}
+.chip.on{background:var(--az);border-color:var(--az);color:#fff}
+.foto{display:flex;gap:12px;align-items:flex-start}
+.foto .th{position:relative;flex:none;width:92px;height:92px;border-radius:10px;overflow:hidden;background:#ccc}
+.foto .th img{width:100%;height:100%;object-fit:cover;display:block}
+.foto .th span{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);color:#fff;font-size:10px;padding:2px 4px;text-align:center}
+.foto .n{font-weight:700;color:var(--az)}
+.foto .lg{margin-top:3px;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.foto .lg.vazia{color:var(--warn);font-style:italic}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:none}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--bg);border-radius:18px 18px 0 0;max-height:94vh;overflow:auto;padding:14px 14px calc(env(safe-area-inset-bottom) + 14px);transform:translateY(105%);transition:transform .22s ease}
+.sheet.open{transform:none}
+.sheet h2{font-size:17px;margin:2px 0 8px}
+.sheet .prev{width:100%;max-height:42vh;object-fit:contain;border-radius:12px;background:#000;display:block}
+.stack>*+*{margin-top:8px}
+.empty{text-align:center;color:var(--mut);padding:40px 20px}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 96px);transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:99px;font-size:14px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.on{opacity:.92}
+.busy{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;display:none;align-items:center;justify-content:center;color:#fff;font-size:16px;text-align:center;padding:30px}
+.busy.on{display:flex}
+.hide{display:none !important}
+.foot{font-size:12px;color:var(--mut);text-align:center;margin-top:18px}
+</style>
+</head>
+<body>
+
+<!-- ============ TELA INICIAL ============ -->
+<section id="vHome">
+  <header><h1>IACE · Fotos de Vistoria</h1><button id="bNova">+ Nova</button></header>
+  <main>
+    <div id="homeList" class="vlist"></div>
+    <div class="foot" id="storageInfo"></div>
+    <div class="foot">Funciona sem internet. As fotos ficam no aparelho até você tocar em <b>Exportar</b> e salvar no iCloud Drive.</div>
+  </main>
+</section>
+
+<!-- ============ TELA DA VISTORIA ============ -->
+<section id="vVist" class="hide">
+  <header><button id="bVoltar">‹</button><h1 id="vTitulo">Vistoria</h1><button id="bDados">Dados</button></header>
+  <main>
+    <div class="pavbox">
+      <span class="mut">Local:</span>
+      <select id="pavAtual"></select>
+    </div>
+    <div class="chips" id="filtros"></div>
+    <div id="fotoList"></div>
+  </main>
+  <div class="bar">
+    <button class="btn sec" id="bGaleria">Galeria</button>
+    <button class="btn cam" id="bCamera">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="4"/></svg>
+      Tirar foto</button>
+    <button class="btn sec" id="bExportar">Exportar</button>
+  </div>
+</section>
+
+<input type="file" id="inCam" accept="image/*" capture="environment" class="hide">
+<input type="file" id="inGal" accept="image/*" multiple class="hide">
+
+<!-- ============ SHEETS ============ -->
+<div class="sheet-bg" id="sheetBg"></div>
+
+<div class="sheet" id="shVist">
+  <h2 id="shVistTit">Nova vistoria</h2>
+  <label>Hotel / Empreendimento *</label>
+  <input id="fHotel" placeholder="Ex.: Sofitel Rio de Janeiro Ipanema">
+  <div class="row">
+    <div><label>Cidade *</label><input id="fCidade" placeholder="Rio de Janeiro"></div>
+    <div style="flex:.45"><label>UF *</label><input id="fUF" maxlength="2" placeholder="RJ" style="text-transform:uppercase"></div>
+  </div>
+  <div class="row">
+    <div><label>Data da vistoria</label><input id="fData" type="date"></div>
+    <div><label>Responsável</label><input id="fResp" placeholder="Eng. ..."></div>
+  </div>
+  <label>Carimbo na foto</label>
+  <select id="fCarimbo">
+    <option value="completo">Data/hora + hotel + local</option>
+    <option value="datalocal">Data/hora + local</option>
+    <option value="data">Só data/hora</option>
+  </select>
+  <div class="stack" style="margin-top:16px">
+    <button class="btn" id="bSalvarVist">Salvar</button>
+    <button class="btn dan hide" id="bExcluirVist">Excluir vistoria</button>
+    <button class="btn sec" data-close>Cancelar</button>
+  </div>
+</div>
+
+<div class="sheet" id="shFoto">
+  <h2 id="shFotoTit">Foto</h2>
+  <img class="prev" id="shFotoImg" alt="">
+  <div class="mut" id="shFotoData" style="margin-top:6px"></div>
+  <label>Local / Pavimento</label>
+  <select id="shFotoPav"></select>
+  <label>Legenda</label>
+  <textarea id="shFotoLeg" placeholder="Descreva a não conformidade / observação… (pode usar o microfone do teclado)"></textarea>
+  <div class="mut" id="shFotoSalvo" style="margin-top:4px">&nbsp;</div>
+  <div class="stack" style="margin-top:10px">
+    <button class="btn" id="bFotoOk">Concluir</button>
+    <div class="row">
+      <button class="btn sec" id="bFotoShare">Compartilhar foto</button>
+      <button class="btn dan" id="bFotoDel">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="shExp">
+  <h2>Exportar vistoria</h2>
+  <div class="mut" id="expInfo"></div>
+  <div class="stack" style="margin-top:14px">
+    <button class="btn" id="bExpGerar">Gerar pacote (ZIP)</button>
+    <button class="btn hide" id="bExpShare">Salvar no iCloud / Compartilhar</button>
+    <button class="btn sec" data-close>Fechar</button>
+  </div>
+  <p class="mut" style="margin-top:12px">No menu que abrir, toque em <b>Salvar em Arquivos</b> e escolha uma pasta do <b>iCloud Drive</b> (ex.: iCloud Drive › IACE Vistorias). Sem sinal, o arquivo sincroniza sozinho quando a internet voltar.</p>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="busy" id="busy"><div id="busyTx">Processando…</div></div>
+
+<script>
+'use strict';
+/* =================== utilidades =================== */
+const $ = s => document.querySelector(s);
+const pad = (n, l = 2) => String(n).padStart(l, '0');
+const fmtData = t => { const d = new Date(t); return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`; };
+const fmtHora = t => { const d = new Date(t); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const fmtDH = t => `${fmtData(t)} ${fmtHora(t)}`;
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const slug = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/º|ª/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'sem_local';
+let toastT;
+function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
+function busy(on, tx) { $('#busy').classList.toggle('on', !!on); if (tx) $('#busyTx').textContent = tx; }
+
+const MAX_LADO = 1920, QUALIDADE = 0.85, THUMB = 240;
+const PAV_PADRAO = ['Subsolo 3', 'Subsolo 2', 'Subsolo 1', 'Subsolo', 'Térreo', 'Mezanino', 'Sobreloja',
+  ...Array.from({ length: 30 }, (_, i) => `${i + 1}º pavimento`),
+  'Cobertura', 'Ático', 'Barrilete', 'Casa de máquinas', 'Fachada', 'Área externa', 'Estacionamento'];
+
+/* =================== IndexedDB =================== */
+const dbp = new Promise((res, rej) => {
+  const r = indexedDB.open('iace-fotos', 1);
+  r.onupgradeneeded = () => {
+    const db = r.result;
+    db.createObjectStore('vistorias', { keyPath: 'id' });
+    db.createObjectStore('fotos', { keyPath: 'id' }).createIndex('vid', 'vid');
+    db.createObjectStore('imagens', { keyPath: 'id' });
+  };
+  r.onsuccess = () => res(r.result);
+  r.onerror = () => rej(r.error);
+});
+async function tx(store, mode, fn) {
+  const db = await dbp;
+  return new Promise((res, rej) => {
+    const t = db.transaction(store, mode); let out;
+    const r = fn(t.objectStore(store));
+    if (r) r.onsuccess = () => { out = r.result; };
+    t.oncomplete = () => res(out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error || new Error('abort'));
+  });
+}
+const dbPut = (s, v) => tx(s, 'readwrite', o => o.put(v));
+const dbGet = (s, k) => tx(s, 'readonly', o => o.get(k));
+const dbDel = (s, k) => tx(s, 'readwrite', o => o.delete(k));
+const dbAll = s => tx(s, 'readonly', o => o.getAll());
+const fotosDe = vid => tx('fotos', 'readonly', o => o.index('vid').getAll(vid));
+
+/* =================== EXIF (data original) =================== */
+function exifData(buf) {
+  try {
+    const v = new DataView(buf);
+    if (v.getUint16(0) !== 0xFFD8) return null;
+    let off = 2;
+    while (off < v.byteLength - 4) {
+      const mk = v.getUint16(off);
+      if ((mk & 0xFF00) !== 0xFF00) break;
+      const len = v.getUint16(off + 2);
+      if (mk === 0xFFE1 && v.getUint32(off + 4) === 0x45786966) {
+        const t = off + 10, le = v.getUint16(t) === 0x4949;
+        const g16 = o => v.getUint16(t + o, le), g32 = o => v.getUint32(t + o, le);
+        let dt = null, exifPtr = null;
+        const ascii = (e, n) => { const p = g32(e + 8); let s = ''; for (let i = 0; i < n - 1; i++) s += String.fromCharCode(v.getUint8(t + p + i)); return s; };
+        const ifd = (o, cb) => { const n = g16(o); for (let i = 0; i < n; i++) { const e = o + 2 + i * 12; cb(g16(e), g32(e + 4), e); } };
+        ifd(g32(4), (tag, n, e) => { if (tag === 0x8769) exifPtr = g32(e + 8); if (tag === 0x0132 && n > 4) dt = ascii(e, n); });
+        if (exifPtr) ifd(exifPtr, (tag, n, e) => { if (tag === 0x9003 && n > 4) dt = ascii(e, n); });
+        const m = dt && dt.match(/(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
+        if (m) { const d = new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6]); if (!isNaN(d) && d.getFullYear() > 2000) return d.getTime(); }
+        return null;
+      }
+      off += 2 + len;
+    }
+  } catch (e) { }
+  return null;
+}
+
+/* =================== imagem =================== */
+function carregaImg(blob) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(blob), img = new Image();
+    img.onload = () => { res(img); setTimeout(() => URL.revokeObjectURL(url), 1000); };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('Imagem inválida')); };
+    img.src = url;
+  });
+}
+const toBlob = (c, q = QUALIDADE) => new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('Falha ao gerar JPEG')), 'image/jpeg', q));
+function redim(img, max) {
+  const w0 = img.naturalWidth || img.width, h0 = img.naturalHeight || img.height;
+  const s = Math.min(1, max / Math.max(w0, h0));
+  const c = document.createElement('canvas'); c.width = Math.round(w0 * s); c.height = Math.round(h0 * s);
+  const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(img, 0, 0, c.width, c.height);
+  return c;
+}
+async function processaArquivo(file, usarExif) {
+  const head = await file.slice(0, 256 * 1024).arrayBuffer();
+  const quando = (usarExif && exifData(head)) || Date.now();
+  const img = await carregaImg(file);
+  const c = redim(img, MAX_LADO);
+  const blob = await toBlob(c);
+  const t = redim(c, THUMB);
+  const thumb = t.toDataURL('image/jpeg', 0.7);
+  c.width = c.height = 0; t.width = t.height = 0;
+  return { quando, buf: await blob.arrayBuffer(), thumb };
+}
+/* carimbo: desenhado sobre a foto ao exportar/compartilhar */
+async function fotoCarimbada(f, vist) {
+  const reg = await dbGet('imagens', f.id);
+  const img = await carregaImg(new Blob([reg.buf], { type: 'image/jpeg' }));
+  const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+  const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+  const modo = vist.carimbo || 'completo';
+  const l1 = fmtDH(f.quando);
+  const l2 = [modo === 'completo' ? vist.hotel : '', modo !== 'data' ? f.pav : ''].filter(Boolean).join(' · ');
+  const fs = Math.max(16, Math.round(Math.min(c.width, c.height) * 0.042)), m = Math.round(fs * 0.6);
+  x.textBaseline = 'alphabetic';
+  x.font = `bold ${fs}px -apple-system, Helvetica, Arial, sans-serif`; const w1 = x.measureText(l1).width;
+  x.font = `${Math.round(fs * 0.78)}px -apple-system, Helvetica, Arial, sans-serif`;
+  let t2 = l2; const maxW = c.width - 4 * m;
+  while (t2 && x.measureText(t2).width > maxW) t2 = t2.slice(0, -2);
+  if (t2 !== l2) t2 += '…';
+  const w2 = t2 ? x.measureText(t2).width : 0;
+  const bw = Math.max(w1, w2) + 2 * m, bh = (t2 ? fs * 1.95 : fs * 1.05) + 2 * m * 0.8;
+  const bx = c.width - bw - m, by = c.height - bh - m;
+  x.fillStyle = 'rgba(0,0,0,0.55)'; x.beginPath();
+  if (x.roundRect) x.roundRect(bx, by, bw, bh, m * 0.6); else x.rect(bx, by, bw, bh);
+  x.fill();
+  x.fillStyle = '#FFD24A'; x.textAlign = 'right';
+  x.font = `bold ${fs}px -apple-system, Helvetica, Arial, sans-serif`;
+  x.fillText(l1, c.width - 2 * m, by + m * 0.8 + fs * 0.9);
+  if (t2) { x.fillStyle = '#fff'; x.font = `${Math.round(fs * 0.78)}px -apple-system, Helvetica, Arial, sans-serif`; x.fillText(t2, c.width - 2 * m, by + m * 0.8 + fs * 1.8); }
+  const b = await toBlob(c, 0.9); c.width = c.height = 0; return b;
+}
+
+/* =================== ZIP (sem compressão) =================== */
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(u8) { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRC_T[(c ^ u8[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+class Zip {
+  constructor() { this.parts = []; this.cd = []; this.off = 0; this.n = 0; const d = new Date(); this.t = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1); this.d = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate(); }
+  async add(name, data) { // data: Blob ou string
+    const blob = typeof data === 'string' ? new Blob([data]) : data;
+    const u8 = new Uint8Array(await blob.arrayBuffer()); const crc = crc32(u8), sz = u8.length;
+    const nm = new TextEncoder().encode(name);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+    h.setUint16(10, this.t, true); h.setUint16(12, this.d, true); h.setUint32(14, crc, true); h.setUint32(18, sz, true); h.setUint32(22, sz, true);
+    h.setUint16(26, nm.length, true); h.setUint16(28, 0, true);
+    this.parts.push(h.buffer, nm, blob);
+    const c = new DataView(new ArrayBuffer(46));
+    c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+    c.setUint16(12, this.t, true); c.setUint16(14, this.d, true); c.setUint32(16, crc, true); c.setUint32(20, sz, true); c.setUint32(24, sz, true);
+    c.setUint16(28, nm.length, true); c.setUint32(42, this.off, true);
+    this.cd.push(c.buffer, nm);
+    this.off += 30 + nm.length + sz; this.n++;
+  }
+  blob() {
+    const cdSize = this.cd.reduce((a, b) => a + b.byteLength, 0);
+    const e = new DataView(new ArrayBuffer(22));
+    e.setUint32(0, 0x06054b50, true); e.setUint16(8, this.n, true); e.setUint16(10, this.n, true); e.setUint32(12, cdSize, true); e.setUint32(16, this.off, true);
+    return new Blob([...this.parts, ...this.cd, e.buffer], { type: 'application/zip' });
+  }
+}
+
+/* =================== estado / navegação =================== */
+let V = null;          // vistoria aberta
+let FOTOS = [];        // fotos da vistoria aberta (ordenadas)
+let filtro = null;     // filtro de pavimento
+let fotoAberta = null; // foto no sheet
+let zipPronto = null;
+
+function abreSheet(id) { $('#sheetBg').style.display = 'block'; requestAnimationFrame(() => $(id).classList.add('open')); }
+function fechaSheets() { document.querySelectorAll('.sheet.open').forEach(s => s.classList.remove('open')); $('#sheetBg').style.display = 'none'; }
+$('#sheetBg').onclick = () => { if ($('#shFoto').classList.contains('open')) salvaFotoAberta(true); fechaSheets(); };
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = fechaSheets);
+
+async function marcaAlterado() { V.alteradoEm = Date.now(); await dbPut('vistorias', V); }
+
+/* ---------- home ---------- */
+async function renderHome() {
+  const vs = (await dbAll('vistorias')).sort((a, b) => (b.alteradoEm || 0) - (a.alteradoEm || 0));
+  const el = $('#homeList');
+  if (!vs.length) { el.innerHTML = '<div class="empty">Nenhuma vistoria ainda.<br><br>Toque em <b>+ Nova</b> para começar.</div>'; }
+  else {
+    const cont = {}; (await dbAll('fotos')).forEach(f => cont[f.vid] = (cont[f.vid] || 0) + 1);
+    el.innerHTML = vs.map(v => {
+      const pend = !v.exportadoEm || v.alteradoEm > v.exportadoEm;
+      return `<div class="card" data-id="${v.id}"><div class="info"><div class="t">${esc(v.hotel)}</div>
+      <div class="mut">${esc(v.cidade)}/${esc(v.uf)} · ${v.data ? v.data.split('-').reverse().join('/') : ''} · ${cont[v.id] || 0} fotos</div>
+      <span class="badge ${pend ? '' : 'ok'}">${pend ? 'Não exportado' : 'Exportado ' + fmtDH(v.exportadoEm)}</span></div><div class="mut">›</div></div>`;
+    }).join('');
+    el.querySelectorAll('.card').forEach(c => c.onclick = () => abreVistoria(c.dataset.id));
+  }
+  if (navigator.storage && navigator.storage.estimate) {
+    const e = await navigator.storage.estimate();
+    $('#storageInfo').textContent = `Espaço usado: ${(e.usage / 1048576).toFixed(0)} MB`;
+  }
+}
+
+/* ---------- vistoria: cadastro ---------- */
+function formVistoria(v) {
+  $('#shVistTit').textContent = v ? 'Dados da vistoria' : 'Nova vistoria';
+  $('#fHotel').value = v?.hotel || ''; $('#fCidade').value = v?.cidade || ''; $('#fUF').value = v?.uf || '';
+  const hoje = new Date(); $('#fData').value = v?.data || `${hoje.getFullYear()}-${pad(hoje.getMonth() + 1)}-${pad(hoje.getDate())}`;
+  $('#fResp').value = v?.resp || localStorage.getItem('iace-resp') || ''; $('#fCarimbo').value = v?.carimbo || 'completo';
+  $('#bExcluirVist').classList.toggle('hide', !v);
+  $('#bSalvarVist').onclick = async () => {
+    const hotel = $('#fHotel').value.trim(), cidade = $('#fCidade').value.trim(), uf = $('#fUF').value.trim().toUpperCase();
+    if (!hotel || !cidade || !uf) { toast('Preencha hotel, cidade e UF'); return; }
+    const nv = Object.assign(v || { id: uid(), criadoEm: Date.now(), seq: 0, pavAtual: 'Térreo', pavExtra: [] },
+      { hotel, cidade, uf, data: $('#fData').value, resp: $('#fResp').value.trim(), carimbo: $('#fCarimbo').value, alteradoEm: Date.now() });
+    try { localStorage.setItem('iace-resp', nv.resp); } catch (e) { }
+    await dbPut('vistorias', nv);
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => { });
+    fechaSheets();
+    if (v) { V = nv; renderVist(); } else abreVistoria(nv.id);
+  };
+  $('#bExcluirVist').onclick = async () => {
+    const pend = !v.exportadoEm || v.alteradoEm > v.exportadoEm;
+    if (!confirm(`Excluir a vistoria "${v.hotel}" e todas as fotos deste aparelho?` + (pend ? '\n\nATENÇÃO: há alterações ainda NÃO exportadas.' : ''))) return;
+    if (pend && !confirm('Tem certeza? Esta ação não pode ser desfeita.')) return;
+    busy(true, 'Excluindo…');
+    for (const f of await fotosDe(v.id)) { await dbDel('imagens', f.id); await dbDel('fotos', f.id); }
+    await dbDel('vistorias', v.id); busy(false); fechaSheets(); mostra('home');
+  };
+  abreSheet('#shVist');
+}
+$('#bNova').onclick = () => formVistoria(null);
+$('#bDados').onclick = () => formVistoria(V);
+
+function mostra(t) {
+  $('#vHome').classList.toggle('hide', t !== 'home'); $('#vVist').classList.toggle('hide', t !== 'vist');
+  window.scrollTo(0, 0); if (t === 'home') { V = null; renderHome(); }
+}
+$('#bVoltar').onclick = () => mostra('home');
+
+/* ---------- vistoria: lista de fotos ---------- */
+function listaPav() {
+  const usados = FOTOS.map(f => f.pav);
+  const extra = [...new Set([...(V.pavExtra || []), ...usados].filter(p => p && !PAV_PADRAO.includes(p)))];
+  return [...extra, ...PAV_PADRAO];
+}
+function preencheSelectPav(sel, valor) {
+  sel.innerHTML = listaPav().map(p => `<option ${p === valor ? 'selected' : ''}>${esc(p)}</option>`).join('') + '<option value="__outro">Outro local…</option>';
+  if (valor && !listaPav().includes(valor)) sel.insertAdjacentHTML('afterbegin', `<option selected>${esc(valor)}</option>`);
+}
+function trataOutro(sel, anterior) {
+  if (sel.value !== '__outro') return sel.value;
+  const n = (prompt('Nome do local (ex.: Casa de bombas, Cozinha, Apto 1204):') || '').trim();
+  if (!n) { sel.value = anterior; return anterior; }
+  V.pavExtra = [...new Set([n, ...(V.pavExtra || [])])];
+  preencheSelectPav(sel, n); return n;
+}
+
+async function abreVistoria(id) {
+  V = await dbGet('vistorias', id); filtro = null;
+  FOTOS = (await fotosDe(id)).sort((a, b) => a.seq - b.seq);
+  mostra('vist'); renderVist();
+}
+function renderVist() {
+  $('#vTitulo').textContent = V.hotel;
+  preencheSelectPav($('#pavAtual'), V.pavAtual);
+  const pavs = [...new Set(FOTOS.map(f => f.pav))];
+  const semLeg = FOTOS.filter(f => !f.leg.trim()).length;
+  $('#filtros').innerHTML = [`<button class="chip ${filtro === null ? 'on' : ''}" data-f="">Todas (${FOTOS.length})</button>`,
+    semLeg ? `<button class="chip ${filtro === '__semleg' ? 'on' : ''}" data-f="__semleg">Sem legenda (${semLeg})</button>` : '',
+    ...pavs.map(p => `<button class="chip ${filtro === p ? 'on' : ''}" data-f="${esc(p)}">${esc(p)} (${FOTOS.filter(f => f.pav === p).length})</button>`)].join('');
+  $('#filtros').querySelectorAll('.chip').forEach(c => c.onclick = () => { filtro = c.dataset.f || null; renderVist(); });
+  const lista = FOTOS.map((f, i) => ({ f, n: i + 1 })).filter(({ f }) => filtro === null || (filtro === '__semleg' ? !f.leg.trim() : f.pav === filtro));
+  $('#fotoList').innerHTML = lista.length ? lista.slice().reverse().map(({ f, n }) => `
+    <div class="card foto" data-id="${f.id}">
+      <div class="th"><img src="${f.thumb}" alt=""><span>${fmtDH(f.quando)}</span></div>
+      <div style="flex:1;min-width:0"><div><span class="n">Foto ${pad(n, 3)}</span> <span class="mut">· ${esc(f.pav)}</span></div>
+      <div class="lg ${f.leg.trim() ? '' : 'vazia'}">${f.leg.trim() ? esc(f.leg) : 'Sem legenda — toque para escrever'}</div></div>
+    </div>`).join('') : '<div class="empty">Nenhuma foto aqui.<br><br>Escolha o local acima e toque em <b>Tirar foto</b>.</div>';
+  $('#fotoList').querySelectorAll('.foto').forEach(c => c.onclick = () => abreFoto(c.dataset.id));
+}
+$('#pavAtual').onchange = async e => { V.pavAtual = trataOutro(e.target, V.pavAtual); await dbPut('vistorias', V); renderVist(); };
+
+/* ---------- captura ---------- */
+$('#bCamera').onclick = () => { $('#inCam').value = ''; $('#inCam').click(); };
+$('#bGaleria').onclick = () => { $('#inGal').value = ''; $('#inGal').click(); };
+$('#inCam').onchange = e => adicionaFotos([...e.target.files], false);
+$('#inGal').onchange = e => adicionaFotos([...e.target.files], true);
+
+async function adicionaFotos(files, daGaleria) {
+  if (!files.length || !V) return;
+  let ultima = null;
+  try {
+    for (let i = 0; i < files.length; i++) {
+      busy(true, files.length > 1 ? `Salvando foto ${i + 1} de ${files.length}…` : 'Salvando foto…');
+      const p = await processaArquivo(files[i], daGaleria);
+      const f = { id: uid(), vid: V.id, seq: ++V.seq, pav: V.pavAtual, leg: '', quando: p.quando, thumb: p.thumb, criadoEm: Date.now() };
+      await dbPut('imagens', { id: f.id, buf: p.buf });
+      await dbPut('fotos', f);
+      FOTOS.push(f); ultima = f;
+    }
+    if (daGaleria) FOTOS.sort((a, b) => a.seq - b.seq);
+    await marcaAlterado();
+  } catch (err) { alert('Não foi possível salvar a foto: ' + err.message); }
+  busy(false); filtro = null; renderVist();
+  if (ultima && files.length === 1) abreFoto(ultima.id);
+  else if (ultima) toast(`${files.length} fotos adicionadas — escreva as legendas`);
+}
+
+/* ---------- editar foto ---------- */
+let salvaT = null;
+async function abreFoto(id) {
+  fotoAberta = FOTOS.find(f => f.id === id); if (!fotoAberta) return;
+  const n = FOTOS.indexOf(fotoAberta) + 1;
+  $('#shFotoTit').textContent = `Foto ${pad(n, 3)} de ${FOTOS.length}`;
+  $('#shFotoData').textContent = `Tirada em ${fmtDH(fotoAberta.quando)}`;
+  $('#shFotoImg').src = fotoAberta.thumb;
+  dbGet('imagens', id).then(r => { if (r && fotoAberta && fotoAberta.id === id) { const u = URL.createObjectURL(new Blob([r.buf], { type: 'image/jpeg' })); $('#shFotoImg').onload = () => URL.revokeObjectURL(u); $('#shFotoImg').src = u; } });
+  preencheSelectPav($('#shFotoPav'), fotoAberta.pav);
+  $('#shFotoLeg').value = fotoAberta.leg; $('#shFotoSalvo').innerHTML = '&nbsp;';
+  abreSheet('#shFoto');
+}
+async function salvaFotoAberta(silencioso) {
+  if (!fotoAberta) return;
+  clearTimeout(salvaT);
+  const leg = $('#shFotoLeg').value, pav = $('#shFotoPav').value === '__outro' ? fotoAberta.pav : $('#shFotoPav').value;
+  if (leg === fotoAberta.leg && pav === fotoAberta.pav) return;
+  fotoAberta.leg = leg; fotoAberta.pav = pav; fotoAberta.editadoEm = Date.now();
+  await dbPut('fotos', fotoAberta); await marcaAlterado();
+  if (!silencioso) $('#shFotoSalvo').textContent = 'Salvo ✓';
+  renderVist();
+}
+$('#shFotoLeg').oninput = () => { $('#shFotoSalvo').textContent = '…'; clearTimeout(salvaT); salvaT = setTimeout(() => salvaFotoAberta(), 600); };
+$('#shFotoPav').onchange = e => { trataOutro(e.target, fotoAberta.pav); salvaFotoAberta(); };
+$('#bFotoOk').onclick = async () => { await salvaFotoAberta(true); fechaSheets(); fotoAberta = null; };
+$('#bFotoDel').onclick = async () => {
+  if (!confirm('Excluir esta foto?')) return;
+  await dbDel('imagens', fotoAberta.id); await dbDel('fotos', fotoAberta.id);
+  FOTOS = FOTOS.filter(f => f !== fotoAberta); fotoAberta = null; await marcaAlterado(); fechaSheets(); renderVist();
+};
+let shareFotoFile = null;
+$('#bFotoShare').onclick = async () => {
+  await salvaFotoAberta(true);
+  const n = FOTOS.indexOf(fotoAberta) + 1;
+  const nome = `${pad(n, 3)}_${slug(fotoAberta.pav)}.jpg`;
+  if (shareFotoFile && shareFotoFile.id === fotoAberta.id && shareFotoFile.leg === fotoAberta.leg) {
+    compartilha(shareFotoFile.file, fotoAberta.leg); return;
+  }
+  busy(true, 'Preparando foto…');
+  const b = await fotoCarimbada(fotoAberta, V); busy(false);
+  shareFotoFile = { id: fotoAberta.id, leg: fotoAberta.leg, file: new File([b], nome, { type: 'image/jpeg' }) };
+  // o iOS exige um toque direto para abrir o compartilhamento
+  $('#bFotoShare').textContent = 'Toque de novo para compartilhar';
+  setTimeout(() => $('#bFotoShare').textContent = 'Compartilhar foto', 6000);
+};
+async function compartilha(file, texto) {
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text: texto || undefined }); return true; }
+  } catch (e) { if (e.name === 'AbortError') return false; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); return true;
+}
+
+/* ---------- exportação ---------- */
+$('#bExportar').onclick = () => {
+  zipPronto = null; $('#bExpShare').classList.add('hide'); $('#bExpGerar').classList.remove('hide');
+  const semLeg = FOTOS.filter(f => !f.leg.trim()).length;
+  $('#expInfo').innerHTML = `<b>${FOTOS.length}</b> fotos · ${new Set(FOTOS.map(f => f.pav)).size} locais` + (semLeg ? `<br><span style="color:var(--warn)">${semLeg} foto(s) sem legenda</span>` : '');
+  abreSheet('#shExp');
+};
+function csvCel(s) { s = String(s ?? ''); return /[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }
+$('#bExpGerar').onclick = async () => {
+  if (!FOTOS.length) { toast('Nenhuma foto para exportar'); return; }
+  const z = new Zip();
+  const dataV = (V.data || '').split('-').reverse().join('-');
+  const base = `IACE_${slug(V.hotel)}_${dataV || fmtData(Date.now()).replace(/\//g, '-')}`;
+  const itens = [];
+  try {
+    for (let i = 0; i < FOTOS.length; i++) {
+      busy(true, `Carimbando foto ${i + 1} de ${FOTOS.length}…`);
+      const f = FOTOS[i], nome = `fotos/${pad(i + 1, 3)}_${slug(f.pav)}.jpg`;
+      await z.add(`${base}/${nome}`, await fotoCarimbada(f, V));
+      itens.push({ n: i + 1, arquivo: nome, pavimento: f.pav, legenda: f.leg.trim(), data: fmtData(f.quando), hora: fmtHora(f.quando), timestamp: new Date(f.quando).toISOString() });
+    }
+    busy(true, 'Gerando legendas…');
+    const csv = '﻿' + ['Nº;Pavimento/Local;Legenda;Data;Hora;Arquivo', ...itens.map(it => [it.n, it.pavimento, it.legenda, it.data, it.hora, it.arquivo].map(csvCel).join(';'))].join('\r\n');
+    await z.add(`${base}/legendas.csv`, csv);
+    const cab = `VISTORIA IACE — ${V.hotel}\n${V.cidade}/${V.uf} · Data: ${(V.data || '').split('-').reverse().join('/')}${V.resp ? ' · Responsável: ' + V.resp : ''}\nTotal: ${itens.length} fotos\n`;
+    let txt = cab, pavAnt = null;
+    for (const it of itens) {
+      if (it.pavimento !== pavAnt) { txt += `\n===== ${it.pavimento.toUpperCase()} =====\n`; pavAnt = it.pavimento; }
+      txt += `\nFoto ${pad(it.n, 3)} — ${it.data} ${it.hora} — ${it.arquivo}\n${it.legenda || '(sem legenda)'}\n`;
+    }
+    await z.add(`${base}/legendas.txt`, txt);
+    await z.add(`${base}/vistoria.json`, JSON.stringify({ app: 'IACE Fotos de Vistoria', versao: 1, exportadoEm: new Date().toISOString(),
+      vistoria: { hotel: V.hotel, cidade: V.cidade, uf: V.uf, data: V.data, responsavel: V.resp }, fotos: itens }, null, 2));
+    zipPronto = new File([z.blob()], `${base}.zip`, { type: 'application/zip' });
+    V.exportadoEm = Date.now(); V.alteradoEm = Math.min(V.alteradoEm || 0, V.exportadoEm); await dbPut('vistorias', V);
+    busy(false);
+    $('#expInfo').innerHTML += `<br><br>Pacote pronto: <b>${esc(zipPronto.name)}</b> (${(zipPronto.size / 1048576).toFixed(1)} MB)`;
+    $('#bExpGerar').classList.add('hide'); $('#bExpShare').classList.remove('hide');
+  } catch (err) { busy(false); alert('Erro ao exportar: ' + err.message); }
+};
+$('#bExpShare').onclick = () => { if (zipPronto) compartilha(zipPronto); };
+
+/* ---------- início ---------- */
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => { });
+renderHome();
+</script>
+</body>
+</html>

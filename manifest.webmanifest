@@ -1,0 +1,2 @@
+{"name":"IACE Fotos de Vistoria","short_name":"IACE Fotos","start_url":"./index.html","scope":"./","display":"standalone","background_color":"#1F3A5F","theme_color":"#1F3A5F","lang":"pt-BR",
+"icons":[{"src":"icon-180.png","sizes":"180x180","type":"image/png"},{"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
